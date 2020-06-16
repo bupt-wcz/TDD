@@ -1,14 +1,18 @@
 from selenium import webdriver
 from django.test import LiveServerTestCase
 import unittest
-
+import os
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.keys import Keys
 MAX_WAIT=10
 import time
-class NewVisitorTest(LiveServerTestCase):#(1)
+class NewVisitorTest(StaticLiveServerTestCase):#(1)
     def setUp(self):
         self.browser=webdriver.Firefox()
+        #staging_server=os.environ.get('STAGING_SERVER')
+        #if staging_server:
+        self.live_server_url='http://'+"39.96.64.220"
 
     def tearDown(self):
         self.browser.quit()
@@ -52,7 +56,7 @@ class NewVisitorTest(LiveServerTestCase):#(1)
         # When she hits enter, the page updates, and now the page lists
         # "1: Buy peacock feathers" as an item in a to-do list table
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_list_table('1:Buy peacock feathers')
+        self.wait_for_row_in_list_table('1: Buy peacock feathers')
 
         # There is still a text box inviting her to add another item. She
         # enters "Use peacock feathers to make a fly" (Edith is very
@@ -60,8 +64,8 @@ class NewVisitorTest(LiveServerTestCase):#(1)
         inputbox = self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('Use peacock feathers to make a fly')
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_list_table('2:Use peacock feathers to make a fly')
-        self.wait_for_row_in_list_table('1:Buy peacock feathers')
+        self.wait_for_row_in_list_table('2: Use peacock feathers to make a fly')
+        self.wait_for_row_in_list_table('1: Buy peacock feathers')
 
 
     def test_multiple_users_can_start_lists_at_different_urls(self):
@@ -69,7 +73,7 @@ class NewVisitorTest(LiveServerTestCase):#(1)
         inputbox=self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('Buy peacock feathers')
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_list_table('1:Buy peacock feathers')
+        self.wait_for_row_in_list_table('1: Buy peacock feathers')
 
         edith_list_url=self.browser.current_url
         self.assertRegex(edith_list_url,'/lists/.+')
@@ -84,7 +88,7 @@ class NewVisitorTest(LiveServerTestCase):#(1)
         inputbox=self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('Buy milk')
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_list_table('1:Buy milk')
+        self.wait_for_row_in_list_table('1: Buy milk')
 
         francis_list_url=self.browser.current_url
         self.assertRegex(francis_list_url,'/lists/.+')
@@ -94,71 +98,7 @@ class NewVisitorTest(LiveServerTestCase):#(1)
         self.assertNotIn('Buy peacock feathers',page_text)
         self.assertIn('Buy milk',page_text)
 
-    def test_can_start_a_list_and_retrive_it_later(self):
 
-      #Edith has heard about a cool new online to-do app.She goes
-      #to check out its homepage
-       #self.browser.get('http://localhost:8000') #(3)
-       self.browser.get(self.live_server_url)
-
-#She notices the page title and header mention to-do lists
-#assert 'To-Do' in browser.title,"Browser title was "+browser.title #(4)
-       self.assertIn('To-Do',self.browser.title)
-       header_text=self.browser.find_element_by_tag_name('h1').text
-       self.assertIn('To-Do',header_text)
-       #self.fail('Finish the test!')
-
-#if  __name__=='__main__':
-#        unittest.main(warnings='ignore')
-#She is invited to enter a to-do item straight away
-       inputbox=self.browser.find_element_by_id('id_new_item')
-       self.assertEqual(
-           inputbox.get_attribute('placeholder'),
-           'Enter a to-do item'
-       )
-#She types "Buy peacock feathers" into a text box(Edith's hobby
-#is trying fly-fishing lures)
-       inputbox.send_keys('Buy peacock feathers')
-
-       inputbox.send_keys(Keys.ENTER)
-       self.wait_for_row_in_list_table('1:Buy peacock feathers')
-       self.check_for_row_in_list_table('1:Buy peacock feathers')
-
-       inputbox = self.browser.find_element_by_id('id_new_item')
-       inputbox.send_keys('Use peacock feathers to make a fly')
-
-#When she hits enter,the page updates,and now the page lists
-#"1:Buy peacock feathers" as an item in a to-do list
-       inputbox.send_keys(Keys.ENTER)
-
-       self.wait_for_row_in_list_table('2:Use peacock feathers to make a fly')
-       self.wait_for_row_in_list_table('1:Buy peacock feathers')
-
-       self.check_for_row_in_list_table('1:Buy peacock feathers')
-
-       self.check_for_row_in_list_table('2:Use peacock feathers to make a fly')
-
-       '''table=self.browser.find_element_by_id('id_list_table')
-       rows=table.find_elements_by_tag_name('tr')'''
-       '''self.assertTrue(
-           any(row.text=='1:Buy peacock feathers' for row in rows),
-           "New to-do item did not appear in table.Content were: \n"+table.text
-       )'''
-       '''self.assertIn('1:Buy peacock feathers',[row.text for row in rows])
-       self.assertIn('2:Use peacock feathers to make a fly', [row.text for row in rows])'''
-#There is still a text box inviting her to add another item.She
-#enters "Use peacock feathers to make a fly" (Edith is very methodical)
-       self.fail('Finish the test!')
-#The page updates again,and now shows both items on her lists
-
-#Edith wonders whether the site will remember her list.Then she sees
-#that the site has generated a unique URL for her -- there is some
-#explanatory text to that effort
-#if  __name__=='__main__':
-#       unittest.main(warnings='ignore')
-#She invites that URL - her to-do list is still there
-
-#Satisfied,she goes back to sleep
 
     def test_layout_and_styling(self):
         self.browser.get(self.live_server_url)
@@ -173,7 +113,7 @@ class NewVisitorTest(LiveServerTestCase):#(1)
         # centered there too
         inputbox.send_keys('testing')
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_list_table('1:testing')
+        self.wait_for_row_in_list_table('1: testing')
         inputbox = self.browser.find_element_by_id('id_new_item')
         self.assertAlmostEqual(
             inputbox.location['x'] + inputbox.size['width'] / 2,
